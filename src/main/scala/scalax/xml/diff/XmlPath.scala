@@ -1,43 +1,24 @@
-/* Copyright (c) 2011 Jay A. Patel <jay@patel.org.in>
- * Copyright (c) 2008 Google Inc.
+/**
+ * scala-xml-diff
+ * Copyright (c) 2014, Andrey Onistchuk, All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library.
  */
-
 package scalax.xml.diff
 
-
-/**
- * A really simple XPath expression. It supports '/' and '//' and only element nodes.
- * Examples: /feed/author, //updated, /feed//entry
- */
-class XmlPath(xpath: String) {
-
-  // remove leading '/'
-  private val normalizedPath = if (xpath.startsWith("/")) xpath.substring(1) else xpath
-  
-  /** 
-   * A list of elements that should be matched by this path. '*' matches any element, 
-   * any number of times.
-   */
-  var elems: List[String] = normalizedPath.split('/').toList map { e => 
-    if (e.length == 0) XmlPath.WILDCARD
-    else e
-  }
-  // remove double, consecutive '*' in the path
-  elems = elems.foldRight(Nil: List[String]) {(e, res) => 
-    if (!res.isEmpty && res.head == "*" && e == "*") res else e :: res  
-  }
+// TODO: make it functional way
+case class XmlPath(elems: List[String]) {
 
   /** Returns true if this XPath matches the given path. */
   def matches(other: List[String]): Boolean = {
@@ -62,5 +43,18 @@ class XmlPath(xpath: String) {
 }
 
 object XmlPath {
-  final val WILDCARD = "*"
+
+  def apply(path: String): XmlPath = XmlPath(parse(path))
+
+  val WILDCARD = "*"
+
+  private def parse(path: String): List[String] = path.split('/')
+    .map(_.trim)
+    .filter(!_.isEmpty)
+    // remove duplicated *
+    .foldRight(Nil: List[String]) {(token, list) => list match {
+      case h :: t if h == WILDCARD && token == WILDCARD => list
+      case _ => token :: list
+    }}
+
 }
