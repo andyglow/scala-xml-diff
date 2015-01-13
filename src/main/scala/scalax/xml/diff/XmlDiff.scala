@@ -22,11 +22,13 @@ sealed trait XmlDiff
 case object NoDiff extends XmlDiff
 
 sealed trait TheDiff extends XmlDiff {
-
   def path: List[xml.Node]
+}
+
+private[diff] object XmlDiff {
 
   // some sugar
-  implicit class NamedNode(n: xml.Node) extends AnyVal {
+  implicit class NamedNode(val n: xml.Node) extends AnyVal {
     def name: String = n.nameToString(new StringBuilder).toString()
   }
 
