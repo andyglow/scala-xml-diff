@@ -77,7 +77,7 @@ class XmlComparator(
       val matched = sortOfSimilar.find(_ == NoDiff)
       matched match {
         case Some(NoDiff) => compareChildren(context, expected, actual.dropWhile(n=>comparison.exists(_._1 == n)))
-        case None => ChildrenDiff(context.path, e, sortOfSimilar)
+        case _ => ChildrenDiff(context.path, e, sortOfSimilar)
       }
     }
   }
