@@ -1,4 +1,8 @@
+import bintray.Keys._
+
 name := "scalax-xml-diff"
+
+organization := "andyglow"
 
 version := "1.0"
 
@@ -18,3 +22,13 @@ libraryDependencies := {
 }
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
+
+publishMavenStyle := true
+
+bintrayPublishSettings
+
+repository in bintray := "scala-tools"
+
+licenses := Seq( "LGPL-2.1" -> url( "http://www.gnu.org/licenses/lgpl-2.1.txt" ))
+
+bintrayOrganization in bintray := None
