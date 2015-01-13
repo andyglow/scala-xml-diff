@@ -26,7 +26,7 @@ sealed trait TheDiff extends XmlDiff {
   def path: List[xml.Node]
 
   // some sugar
-  implicit class RichNode(n: xml.Node) {
+  implicit class NamedNode(n: xml.Node) extends AnyVal {
     def name: String = n.nameToString(new StringBuilder).toString()
   }
 
