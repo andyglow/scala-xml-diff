@@ -6,7 +6,7 @@ organization := "com.github.andyglow"
 
 description := "Scala XML Diff library"
 
-version := "1.1-SNAPSHOT"
+version := "1.1.1"
 
 scalaVersion        := "2.11.2"
 
@@ -33,7 +33,7 @@ bintrayPublishSettings
 
 repository in bintray := "scala-tools"
 
-pomIncludeRepository := { _ => false }
+//pomIncludeRepository := { _ => false }
 
 licenses := Seq( "LGPL-2.1" -> url( "http://www.gnu.org/licenses/lgpl-2.1.txt" ))
 
