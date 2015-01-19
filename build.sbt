@@ -4,7 +4,9 @@ name := "scalax-xml-diff"
 
 organization := "com.github.andyglow"
 
-version := "1.1"
+description := "Scala XML Diff library"
+
+version := "1.1-SNAPSHOT"
 
 scalaVersion        := "2.11.2"
 
@@ -25,10 +27,28 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 
 publishMavenStyle := true
 
+publishArtifact in Test := false
+
 bintrayPublishSettings
 
 repository in bintray := "scala-tools"
 
+pomIncludeRepository := { _ => false }
+
 licenses := Seq( "LGPL-2.1" -> url( "http://www.gnu.org/licenses/lgpl-2.1.txt" ))
 
 bintrayOrganization in bintray := None
+
+pomExtra := (
+  <url>http://github.com/andyglow/scala-xml-diff</url>
+  <scm>
+    <url>git@github.com:andyglow/scala-xml-diff.git</url>
+    <connection>scm:git:git@github.com:andyglow/scala-xml-diff.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>andyglow</id>
+      <name>Andrey Onistchuk</name>
+      <url>http://ua.linkedin.com/in/andyglow/</url>
+    </developer>
+  </developers>)
