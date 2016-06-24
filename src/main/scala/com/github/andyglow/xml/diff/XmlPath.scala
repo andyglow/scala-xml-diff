@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package scalax.xml.diff
+package com.github.andyglow.xml.diff
 
-// TODO: make it functional way
 case class XmlPath(elems: List[String]) {
 
   /** Returns true if this XPath matches the given path. */

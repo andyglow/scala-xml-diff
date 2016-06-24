@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package scalax.xml.diff
+package com.github.andyglow.xml.diff
 
 sealed trait XmlDiff
 
@@ -27,7 +27,6 @@ sealed trait TheDiff extends XmlDiff {
 
 private[diff] object XmlDiff {
 
-  // some sugar
   implicit class NamedNode(val n: xml.Node) extends AnyVal {
     def name: String = n.nameToString(new StringBuilder).toString()
   }

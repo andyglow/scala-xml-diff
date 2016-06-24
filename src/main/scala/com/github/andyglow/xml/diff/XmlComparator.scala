@@ -15,25 +15,26 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
-package scalax.xml.diff
+package com.github.andyglow.xml.diff
 
-case class XmlComparisonContext(
-  path: List[xml.Node] = Nil
-) {
+case class XmlComparisonContext(path: List[xml.Node] = Nil) {
   def append(node: xml.Node): XmlComparisonContext = this.copy(path = node :: path)
 }
 
 object XmlComparator {
-  def apply(ignorePaths: List[XmlPath] = Nil, ignoreTextDiffs: Boolean = false, strict: Boolean = false): XmlComparator = new XmlComparator(ignorePaths, ignoreTextDiffs, strict)
-  def apply(e1: xml.Elem, e2: xml.Elem): XmlDiff = XmlComparator()(e1, e2)
+  def apply(
+    ignorePaths: List[XmlPath] = Nil,
+    ignoreTextDiffs: Boolean = false,
+    strict: Boolean = false): XmlComparator = {
+
+    new XmlComparator(ignorePaths, ignoreTextDiffs, strict)
+  }
 }
 
 class XmlComparator(
   val ignorePaths: List[XmlPath] = Nil,
   val ignoreTextDiffs: Boolean = false,
-  val strict: Boolean = false) extends ((xml.Elem, xml.Elem) => XmlDiff) {
-
-  def apply(exp: xml.Elem, act: xml.Elem): XmlDiff = compare(exp, act)
+  val strict: Boolean = false) {
 
   def shouldSkip(context: XmlComparisonContext, e: xml.Node): Boolean = {
     val ps = e.label :: (context.path map (_.label))
