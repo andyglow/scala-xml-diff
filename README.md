@@ -11,5 +11,27 @@ Tool to compare `scala.xml.Node`s with detailed comparison result
 libraryDependencies += "com.github.andyglow" %% "scala-xml-diff" % ${LATEST_VERSION} % Compile
 ```
 
+#### Import
+```scala
+import com.github.andyglow.xml.diff._
+```
+
+```scala
+scala> <foo/> compareTo <foo/>
+res0: com.github.andyglow.xml.diff.XmlDiff = NoDiff
+
+scala> <foo/> compareTo <bar/>
+res1: com.github.andyglow.xml.diff.XmlDiff = NodeDiff(
+   Expected: <foo/>
+   Found: <bar/>
+)
+
+scala> <foo x="a"/> compareTo <foo x="b"/>
+res2: com.github.andyglow.xml.diff.XmlDiff = AttributesDiff(
+   Expected: Map(x -> a)
+   Found: Map(x -> b)
+)
+```
 
 _TODO_
+- provide scalatest matchers
