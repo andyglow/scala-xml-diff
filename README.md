@@ -16,6 +16,7 @@ libraryDependencies += "com.github.andyglow" %% "scala-xml-diff" % ${LATEST_VERS
 import com.github.andyglow.xml.diff._
 ```
 
+#### REPL example
 ```scala
 scala> <foo/> compareTo <foo/>
 res0: com.github.andyglow.xml.diff.XmlDiff = NoDiff
