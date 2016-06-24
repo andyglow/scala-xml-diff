@@ -5,4 +5,11 @@
 Tool to compare `scala.xml.Node`s with detailed comparison result
 
 ## Usage
+
+### build.sbt
+```
+libraryDependencies += "com.github.andyglow" %% "scala-xml-diff" % ${LATEST_VERSION} % Compile
+```
+
+
 _TODO_
