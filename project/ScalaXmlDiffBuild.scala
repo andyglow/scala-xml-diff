@@ -48,7 +48,7 @@ object ScalaXmlDiffBuild extends Build {
 
   object BuildSettings {
 
-    val ver = "1.1.2"
+    val ver = "1.1.3"
 
     lazy val settings = Defaults.coreDefaultSettings ++ Seq(
       version := ver,

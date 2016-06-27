@@ -20,7 +20,7 @@ package com.github.andyglow.xml
 package object diff {
 
   implicit class XmlOps(val x: xml.Elem) extends AnyVal {
-    def compareTo(o: xml.Elem): XmlDiff = XmlComparator().compare(x, o)
+    def compareTo(o: xml.Elem): XmlDiffResult = XmlComparator().compare(x, o)
   }
 
 }

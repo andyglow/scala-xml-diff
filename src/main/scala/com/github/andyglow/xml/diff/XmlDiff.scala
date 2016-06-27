@@ -17,11 +17,12 @@
  */
 package com.github.andyglow.xml.diff
 
-sealed trait XmlDiff
+sealed trait XmlDiffResult
 
-case object NoDiff extends XmlDiff
+case object XmlEqual extends XmlDiffResult
+case class XmlDifferent(diff: XmlDiff) extends XmlDiffResult
 
-sealed trait TheDiff extends XmlDiff {
+sealed trait XmlDiff {
   def path: List[xml.Node]
 }
 
@@ -31,37 +32,40 @@ private[diff] object XmlDiff {
     def name: String = n.nameToString(new StringBuilder).toString()
   }
 
-}
+  case class RedundantNode(path: List[xml.Node], node: xml.Node) extends XmlDiff {
+    override def toString = s"""RedundantNode(
+                                |   $node
+                                |)""".stripMargin
+  }
 
-case class IllegalNodeFound(path: List[xml.Node], node: xml.Node) extends TheDiff {
-  override def toString = s"""IllegalNodeFound(
-      |   ${node}
-      |)""".stripMargin
-}
+  case class AbsentNode(path: List[xml.Node], node: xml.Node) extends XmlDiff {
+    override def toString = s"""AbsentNode(
+                                |   $node
+                                |)""".stripMargin
+  }
 
-case class NodeNotFound(path: List[xml.Node], node: xml.Node) extends TheDiff {
-  override def toString = s"""NodeNotFound(
-      |   ${node}
-      |)""".stripMargin
-}
+  case class NodeDiff(path: List[xml.Node], expected: xml.Node, actual: xml.Node) extends XmlDiff {
+    override def toString = s"""NodeDiff(
+                                |   Expected: ${expected}
+                                |   Actual: ${actual}
+                                |)""".stripMargin
+  }
 
-case class NodeDiff(path: List[xml.Node], expected: xml.Node, actual: xml.Node) extends TheDiff {
-  override def toString = s"""NodeDiff(
-      |   Expected: ${expected}
-      |   Found: ${actual}
-      |)""".stripMargin
-}
+  case class AttributesDiff(path: List[xml.Node], expected: xml.MetaData, actual: xml.MetaData) extends XmlDiff {
+    override def toString = s"""AttributesDiff(
+                                |   Expected: ${expected.asAttrMap}
+                                |   Actual: ${actual.asAttrMap}
+                                |)""".stripMargin
+  }
 
-case class AttributesDiff(path: List[xml.Node], expected: xml.MetaData, actual: xml.MetaData) extends TheDiff {
-  override def toString = s"""AttributesDiff(
-      |   Expected: ${expected.asAttrMap}
-      |   Found: ${actual.asAttrMap}
-      |)""".stripMargin
-}
+  case class ChildrenDiff(path: List[xml.Node], element: xml.Node, list: List[XmlDiff]) extends XmlDiff {
+    override def toString = {
+      val wrongElementsReport = list.mkString(",\n").lines.map("   " + _).mkString("\n")
+      s"""ChildrenDiff(
+          |   None of the elements found fully matched $element
+          |$wrongElementsReport
+          |)""".stripMargin
+    }
+  }
 
-case class ChildrenDiff(path: List[xml.Node], element: xml.Node, list: List[XmlDiff]) extends TheDiff {
-  override def toString = s"""ChildrenDiff(
-      |   None of the elements found fully matched ${element}
-      |${list.mkString(",\n").lines.map("   " + _).mkString("\n")}
-      |)""".stripMargin
 }

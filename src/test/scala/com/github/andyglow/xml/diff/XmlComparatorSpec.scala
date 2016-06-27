@@ -18,36 +18,36 @@
 package com.github.andyglow.xml.diff
 
 import org.scalatest._
-
 import scala.xml.{UnprefixedAttribute => Attr}
+import XmlDiff._
 
 class XmlComparatorSpec extends FlatSpec with Matchers {
 
   "<foo/>" must "be <foo/>" in {
     val x1 = <foo/>
     val x2 = <foo/>
-    (x1 compareTo x2) should be(NoDiff)
+    (x1 compareTo x2) should be(XmlEqual)
   }
 
   "<foo key=\"val\"/>" must "be <foo key=\"val\"/>" in {
     val x1 = <foo key="val"/>
     val x2 = <foo key="val"/>
-    (x1 compareTo x2) should be(NoDiff)
+    (x1 compareTo x2) should be(XmlEqual)
   }
 
   "<foo><bar key=\"val\"/></foo>" must "be <foo><bar key=\"val\"/></foo>" in {
     val x1 = <foo><bar key="val"/></foo>
     val x2 = <foo><bar key="val"/></foo>
-    (x1 compareTo x2) should be(NoDiff)
+    (x1 compareTo x2) should be(XmlEqual)
   }
 
   "<foo key=\"val1\"/>" must " not be <foo key=\"val2\"/>" in {
     val x1 = <foo key="val1"/>
     val x2 = <foo key="val2"/>
     x1 compareTo x2 match {
-      case diff@AttributesDiff(_,
-        xml.UnprefixedAttribute("key", Seq(xml.Text("val1")), xml.Null),
-        xml.UnprefixedAttribute("key", Seq(xml.Text("val2")), xml.Null)) => assert(true)
+      case XmlDifferent(AttributesDiff(_,
+        Attr("key", Seq(xml.Text("val1")), xml.Null),
+        Attr("key", Seq(xml.Text("val2")), xml.Null))) => assert(true)
       case _ => assert(false)
     }
   }
@@ -56,9 +56,9 @@ class XmlComparatorSpec extends FlatSpec with Matchers {
     val x1 = <foo key1="val1" key2="val2"/>
     val x2 = <foo key1="val1"/>
     x1 compareTo x2 match {
-      case diff@AttributesDiff(_,
+      case XmlDifferent(AttributesDiff(_,
         Attr("key1", Seq(xml.Text("val1")), Attr("key2", Seq(xml.Text("val2")), xml.Null)),
-        Attr("key1", Seq(xml.Text("val1")), xml.Null)) => assert(true)
+        Attr("key1", Seq(xml.Text("val1")), xml.Null))) => assert(true)
       case _ => assert(false)
     }
   }
@@ -67,8 +67,8 @@ class XmlComparatorSpec extends FlatSpec with Matchers {
     val x1 = <foo><bar/></foo>
     val x2 = <foo><baz/></foo>
     x1 compareTo x2 match {
-      case diff@NodeNotFound(_, <bar/>) => assert(true)
-      case diff@_ => assert(false)
+      case XmlDifferent(AbsentNode(_, <bar/>)) => assert(true)
+      case diff@_ => println(diff); assert(false)
     }
   }
 
@@ -76,10 +76,10 @@ class XmlComparatorSpec extends FlatSpec with Matchers {
     val x1 = <foo><bar key="val1"/></foo>
     val x2 = <foo><bar key="val2"/></foo>
     x1 compareTo x2 match {
-      case diff@ChildrenDiff(_, _, List(AttributesDiff(_,
+      case XmlDifferent(ChildrenDiff(_, _, List(AttributesDiff(_,
         Attr("key", Seq(xml.Text("val1")), xml.Null),
-        Attr("key", Seq(xml.Text("val2")), xml.Null)))) => assert(true)
-      case diff@_ => assert(false)
+        Attr("key", Seq(xml.Text("val2")), xml.Null))))) => assert(true)
+      case _ => assert(false)
     }
   }
 
@@ -87,10 +87,10 @@ class XmlComparatorSpec extends FlatSpec with Matchers {
     val x1 = <foo><bar key1="val1" key2="val2"/></foo>
     val x2 = <foo><bar key1="val1"/></foo>
     x1 compareTo x2 match {
-      case diff@ChildrenDiff(_, _, List(AttributesDiff(_,
+      case XmlDifferent(ChildrenDiff(_, _, List(AttributesDiff(_,
       Attr("key1", Seq(xml.Text("val1")), Attr("key2", Seq(xml.Text("val2")), xml.Null)),
-      Attr("key1", Seq(xml.Text("val1")), xml.Null)))) => assert(true)
-      case diff@_ => assert(false)
+      Attr("key1", Seq(xml.Text("val1")), xml.Null))))) => assert(true)
+      case _ => assert(false)
     }
   }
 
@@ -98,12 +98,11 @@ class XmlComparatorSpec extends FlatSpec with Matchers {
     val x1 = <foo><bar key1="val1"/></foo>
     val x2 = <foo><bar key1="val1" key2="val2"/></foo>
     XmlComparator(strict = true).compare(x1, x2) match {
-      case diff@ChildrenDiff(_, _, List(AttributesDiff(_,
+      case XmlDifferent(ChildrenDiff(_, _, List(AttributesDiff(_,
         Attr("key1", Seq(xml.Text("val1")), xml.Null),
-        Attr("key1", Seq(xml.Text("val1")), Attr("key2", Seq(xml.Text("val2")), xml.Null))))) => assert(true)
-      case diff@_ => assert(false)
+        Attr("key1", Seq(xml.Text("val1")), Attr("key2", Seq(xml.Text("val2")), xml.Null)))))) => assert(true)
+      case _ => assert(false)
     }
   }
-
 
 }

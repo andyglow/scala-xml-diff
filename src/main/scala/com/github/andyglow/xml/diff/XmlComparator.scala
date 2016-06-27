@@ -17,6 +17,8 @@
  */
 package com.github.andyglow.xml.diff
 
+import XmlDiff._
+
 case class XmlComparisonContext(path: List[xml.Node] = Nil) {
   def append(node: xml.Node): XmlComparisonContext = this.copy(path = node :: path)
 }
@@ -44,16 +46,16 @@ class XmlComparator(
   private def compareChildren(
     context: XmlComparisonContext,
     expected: List[xml.Node],
-    actual: List[xml.Node]): XmlDiff = {
+    actual: List[xml.Node]): XmlDiffResult = {
 
     expected match {
       case e :: tail =>
         e match {
           case e: xml.Elem if !shouldSkip(context, e) => findMatchingNode(context, tail, actual, e)
-          case xml.Text(_t) if _t.trim.isEmpty => NoDiff // ???
+          case xml.Text(_t) if _t.trim.isEmpty => XmlEqual
           case _ => compare(e, actual.head, context)
         }
-      case Nil => NoDiff
+      case Nil => XmlEqual
     }
   }
 
@@ -61,24 +63,22 @@ class XmlComparator(
     context: XmlComparisonContext,
     expected: List[xml.Node],
     actual: List[xml.Node],
-    e: xml.Node): XmlDiff = {
+    e: xml.Node): XmlDiffResult = {
 
     val comparison = actual.filter {
       case a: xml.Node => isNodeNamesEqual(context, e, a)
       case _ => false
-    } map { n =>
-      val diff = compare(e, n, context)
-      (n, diff)
-    }
+    } map { n => (n, compare(e, n, context)) }
 
     if (comparison.isEmpty)
-      NodeNotFound(context.path, e)
+      XmlDifferent(AbsentNode(context.path, e))
     else {
-      val sortOfSimilar = comparison.map(_._2)
-      val matched = sortOfSimilar.find(_ == NoDiff)
-      matched match {
-        case Some(NoDiff) => compareChildren(context, expected, actual.dropWhile(n=>comparison.exists(_._1 == n)))
-        case _ => ChildrenDiff(context.path, e, sortOfSimilar)
+      def diffs = comparison collect { case (_, XmlDifferent(diff)) => diff }
+      val hasEquals = comparison collectFirst { case (_, XmlEqual) => true } getOrElse false
+      if (hasEquals) {
+        compareChildren(context, expected, actual.dropWhile(n => comparison.exists { case (node, _) => node == n }))
+      } else {
+        XmlDifferent(ChildrenDiff(context.path, e, diffs))
       }
     }
   }
@@ -106,37 +106,37 @@ class XmlComparator(
     }
   }
 
-  def compare(expected: xml.Node, actual: xml.Node, context: XmlComparisonContext = XmlComparisonContext()): XmlDiff = {
+  def compare(expected: xml.Node, actual: xml.Node, context: XmlComparisonContext = XmlComparisonContext()): XmlDiffResult = {
     (expected, actual) match {
 
       case (xml.Comment(_), _) | (_, xml.Comment(_)) =>
-        NoDiff
+        XmlEqual
         
       case (xml.Text(t1), xml.Text(t2)) =>
         if (ignoreTextDiffs || t1.trim == t2.trim)
-          NoDiff 
+          XmlEqual
         else
-          NodeDiff(context.path, expected, actual)
+          XmlDifferent(NodeDiff(context.path, expected, actual))
         
       case (e1: xml.Elem, e2: xml.Elem) =>
         val next = context.append(e1)
 
         if (shouldSkip(next, e1))
-          NoDiff
+          XmlEqual
         else if (isNodeNamesEqual(next, e1, e2)) {
           if (isAttrsEqual(e1, e2))
             compareChildren(next, e1.child.toList, e2.child.toList)
           else
-            AttributesDiff(next.path, e1.attributes, e2.attributes)
+            XmlDifferent(AttributesDiff(next.path, e1.attributes, e2.attributes))
         } else {
-          NodeDiff(next.path, e1, e2)
+          XmlDifferent(NodeDiff(next.path, e1, e2))
         }
 
       case (e1: xml.Node, e2: xml.Node) =>
         if (ignoreTextDiffs || e1.text == e2.text)
-          NoDiff 
+          XmlEqual
         else
-          NodeDiff(context.path, e1, e2)
+          XmlDifferent(NodeDiff(context.path, e1, e2))
 
     }
   }
