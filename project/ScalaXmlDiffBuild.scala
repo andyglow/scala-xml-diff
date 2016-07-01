@@ -25,8 +25,8 @@ object ScalaXmlDiffBuild extends Build {
       checksums := Seq(),
       pomExtra :=
         <scm>
-          <url>git://github.com/andyglow/${projectId}.git</url>
-          <connection>scm:git://github.com/andyglow/${projectId}.git</connection>
+          <url>git://github.com/andyglow/{projectId}.git</url>
+          <connection>scm:git://github.com/andyglow/{projectId}.git</connection>
         </scm>
           <developers>
             <developer>
