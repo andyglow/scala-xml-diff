@@ -19,21 +19,47 @@ import com.github.andyglow.xml.diff._
 
 #### REPL example
 ```scala
-scala> <foo/> compareTo <foo/>
-res0: com.github.andyglow.xml.diff.XmlDiff = NoDiff
+scala> <foo/> =?= <foo/>
+res0: com.github.andyglow.xml.diff.package.XmlDiff = Eq
 
-scala> <foo/> compareTo <bar/>
-res1: com.github.andyglow.xml.diff.XmlDiff = NodeDiff(
-   Expected: <foo/>
-   Found: <bar/>
-)
+scala> <foo/> =?= <bar/>
+res1: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalName(foo,bar)))
 
-scala> <foo x="a"/> compareTo <foo x="b"/>
-res2: com.github.andyglow.xml.diff.XmlDiff = AttributesDiff(
-   Expected: Map(x -> a)
-   Found: Map(x -> b)
-)
+scala> <foo x="a"/> =?= <foo x="b"/>
+res2: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalAttribute(x,a,b)))
+
+scala> <foo><bar key="val1" key2="val2"/></foo> =?= <foo><bar key="val2" key3="val3"/></foo>
+res3: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(
+  UnequalElem(bar,List(
+    UnequalAttribute(key,val1,val2),
+    AbsentAttribute(key2,val2),
+    RedundantAttribute(key3,val3)))))
 ```
 
-_TODO_
-- provide scalatest matchers
+#### Scalatest example
+```scala
+import org.scalatest.xml.XmlMatchers._
+```
+
+```scala
+"MyRestService" must {
+  "generate proper xml" in {
+    val document: xml.NodeSeq = service.call(...)
+    document should beXml(
+    <document>
+      <title>Invoice</title>
+      <version>0.6.2</version>
+      <header></header>
+      <content>
+        <line id="...">...</line>
+      </content>
+    </document>
+    )
+  }
+  
+  // it is also possible to match negative scenarios
+  "be able to distinguish <bar/> from <foo/>" in {
+    <bar/> should not beXml <foo/>
+  }
+}
+```
