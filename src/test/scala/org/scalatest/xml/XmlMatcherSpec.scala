@@ -29,8 +29,14 @@ class XmlMatcherSpec extends WordSpec with Matchers {
     "handle simple equality" in {
       <foo/> should beXml(<foo/>)
     }
+    "handle simple equality ignoring whitespaces" in {
+        <foo> a</foo> should beXml(<foo>a </foo>, ignoreWhitespace = true)
+    }
     "handle simple inequality" in {
       <bar/> should not beXml <foo/>
+    }
+    "handle simple inequality ignoring whitespaces" in {
+      <foo> a</foo> should not beXml(<foo>b </foo>, ignoreWhitespace = true)
     }
     "handle simple xml file equality" in {
       val xml1 = XML load classOf[XmlMatcherSpec].getResource("/simple.xml")

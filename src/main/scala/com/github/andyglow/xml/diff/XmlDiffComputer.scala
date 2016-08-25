@@ -21,14 +21,6 @@ import com.github.andyglow.xml.diff.XmlDiff._
 
 private[diff] object XmlDiffComputer {
 
-  def matchText(e: xml.Node, a: xml.Node): XmlDiff = {
-    if (e.child.noElements && a.child.noElements) {
-      val left = e.text.trim
-      val right = a.text.trim
-      if (left == right) Eq else Neq(UnequalText(left, right))
-    } else Eq
-  }
-
   def matchNames(e: xml.Node, a: xml.Node): XmlDiff = {
     def testName = if (e.label == a.label) None else Some(UnequalName(e.label, a.label))
     def testNsUri = if (e.namespace == a.namespace) None else Some(UnequalNamespaceUri(e.namespace, a.namespace))
@@ -74,17 +66,18 @@ private[diff] object XmlDiffComputer {
 
   }
 
-  private def compute(left: Seq[xml.Elem], right: Seq[xml.Elem])(v: (Option[xml.Elem], xml.Elem) => XmlDiff): (XmlDiff, Seq[xml.Elem]) = {
-    def contains(one: xml.Elem, all: Seq[xml.Elem]): (XmlDiff, Seq[xml.Elem]) = {
-      val (head, tail) = all findAndDrop { x =>
-        x.namespace == one.namespace &&
-          x.label == one.label
-      }
-      def childrenRes = head map { x =>
-        matchChildren(one.child.elements, x.child.elements) flatMap {
-          details => List(UnequalElem(one.label, details))
+  private def compute(left: Seq[xml.Node], right: Seq[xml.Node])(v: (Option[xml.Node], xml.Node) => XmlDiff): (XmlDiff, Seq[xml.Node]) = {
+    def contains(one: xml.Node, all: Seq[xml.Node]): (XmlDiff, Seq[xml.Node]) = {
+      val lookup = Lookup(one)
+      val (head, tail) = all findAndDrop lookup.apply
+
+      val childrenRes = head map { x =>
+        matchChildren(one.child, x.child) flatMap { details =>
+          List(UnequalElem(one.label, details))
         }
       } getOrElse Eq
+
+
       (v(head, one) ++ childrenRes, tail)
     }
 
@@ -99,16 +92,21 @@ private[diff] object XmlDiffComputer {
     }
   }
 
-  def matchChildren(e: Seq[xml.Elem], a: Seq[xml.Elem]): XmlDiff = {
+  def matchChildren(e: Seq[xml.Node], a: Seq[xml.Node]): XmlDiff = {
     val (diff1, rest) = compute(e, a) {
-      case (Some(that), one) => (matchText(one, that) ++ matchAttributes(one, that)) flatMap { details =>
-        List(UnequalElem(one.label, details))
-      }
-      case (None, one) => Neq(AbsentElem(one))
+      case (Some(that: xml.Elem), one: xml.Elem) =>
+        matchAttributes(one, that) flatMap { details =>
+          List(UnequalElem(one.label, details))
+        }
+
+      case (Some(that), one) =>
+        if (one.text.trim == that.text.trim) Eq else Neq(AbsentNode(one), RedundantNode(that))
+
+      case (None, one) => Neq(AbsentNode(one))
     }
 
     val diff2 = rest.foldLeft[XmlDiff](Eq) {
-      case (diff, that) => diff ++ Neq(RedundantElem(that))
+      case (diff, that) => diff ++ Neq(RedundantNode(that))
     }
 
     diff1 ++ diff2
@@ -116,26 +114,19 @@ private[diff] object XmlDiffComputer {
 
   def computeMatching(e: xml.NodeSeq, a: xml.NodeSeq): XmlDiff = {
     (e, a) match {
-
-      case (xml.Comment(_), _) | (_, xml.Comment(_)) =>
-        Eq
-
-      case (xml.Text(t1), xml.Text(t2)) =>
-        if (t1.trim == t2.trim) Eq else
-          Neq(UnequalText(t1.trim, t2.trim))
-
       case (e: xml.Elem, a: xml.Elem) =>
         matchNames(e, a) ++
-        matchText(e, a) ++
         matchAttributes(e, a) ++
-        matchChildren(e.child.elements, a.child.elements)
+        matchChildren(e.child, a.child) flatMap {
+          details => List(UnequalElem(e.label, details))
+        }
 
       case (e: xml.Node, a: xml.Node) =>
         if (e.text.trim == a.text.trim) Eq else
-          Neq(UnequalText(e.text.trim, a.text.trim))
+          Neq(AbsentNode(e), RedundantNode(a))
 
       case _ =>
-        matchChildren(e.theSeq.elements, a.theSeq.elements)
+        matchChildren(e.theSeq, a.theSeq)
 
     }
   }

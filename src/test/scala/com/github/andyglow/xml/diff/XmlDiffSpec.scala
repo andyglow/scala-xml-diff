@@ -30,16 +30,12 @@ class XmlDiffSpec extends WordSpec with Matchers {
     }
 
     "not match different simple empty elements" in {
-      (<foo/> =?= <bar/>) mustBe (Neq(UnequalName("foo", "bar")))
+      (<foo/> =?= <bar/>) mustBe (Neq(UnequalElem("foo", List(UnequalName("foo", "bar")))))
     }
 
     "not match same named simple empty elements in different namespaces" in {
       (<x:foo xmlns:x="http://xxx"/> =?= <x:foo xmlns:x="http://yyy"/>) mustBe (
-        Neq(UnequalNamespaceUri("http://xxx", "http://yyy")))
-    }
-
-    "not match the same simple empty elements with different " in {
-      (<foo/> =?= <bar/>) mustBe (Neq(UnequalName("foo", "bar")))
+        Neq(UnequalElem("foo", List(UnequalNamespaceUri("http://xxx", "http://yyy")))))
     }
 
     "match the same simple elements with text" in {
@@ -47,24 +43,28 @@ class XmlDiffSpec extends WordSpec with Matchers {
     }
 
     "match the same simple elements with text, whitespaces are ignored" in {
-      (
+      val xml1 =
         <root>
           <fee>ttt</fee> <foo>xxx</foo> <bar>rrr</bar>
         </root>
-          =?=
-          <root>
-            <fee>ttt
-            </fee>
-            <foo>
-              xxx
 
-            </foo> <bar>rrr</bar>
-          </root>
-        ) mustBe (Eq)
+      val xml2 =
+        <root>
+          <fee>ttt
+          </fee>
+          <foo>
+            xxx
+
+          </foo> <bar>rrr</bar>
+        </root>
+
+      (xml1 =#= xml2) mustBe (Eq)
     }
 
     "not match the same simple elements with different text" in {
-      (<foo>xxx</foo> =?= <foo>yyy</foo>) mustBe (Neq(UnequalText("xxx", "yyy")))
+      (<foo>xxx</foo> =?= <foo>yyy</foo>) mustBe (Neq(UnequalElem("foo", List(
+        AbsentNode(scala.xml.Text("xxx")),
+        RedundantNode(scala.xml.Text("yyy"))))))
     }
 
     "match the same empty elements with the same attributes" in {
@@ -73,12 +73,12 @@ class XmlDiffSpec extends WordSpec with Matchers {
 
     "not match the same empty elements with different attribute value" in {
       (<foo key="val1"/> =?= <foo key="val2"/>) mustBe (
-        Neq(UnequalAttribute("key", "val1", "val2")))
+        Neq(UnequalElem("foo", List(UnequalAttribute("key", "val1", "val2")))))
     }
 
     "not match the same empty elements with different attribute set" in {
       (<foo key1="val1"/> =?= <foo key2="val2"/>) mustBe (
-        Neq(AbsentAttribute("key1", "val1"), RedundantAttribute("key2", "val2")))
+        Neq(UnequalElem("foo", List(AbsentAttribute("key1", "val1"), RedundantAttribute("key2", "val2")))))
     }
 
     "match the same elements with the same childen" in {
@@ -89,23 +89,22 @@ class XmlDiffSpec extends WordSpec with Matchers {
 
     "not match the same elements with different childern" in {
       (<foo><bar/></foo> =?= <foo><baz/></foo>) mustBe (
-        Neq(AbsentElem(<bar/>), RedundantElem(<baz/>)))
+        Neq(UnequalElem("foo", List(AbsentNode(<bar/>), RedundantNode(<baz/>)))))
     }
 
     "not match the same inner element with different arguments" in {
       (<foo><bar key="val1" key2="val2"/></foo> =?= <foo><bar key="val2" key3="val3"/></foo>) mustBe (
-        Neq(UnequalElem("bar", List(
+        Neq(UnequalElem("foo", List(UnequalElem("bar", List(
           UnequalAttribute("key", "val1", "val2"),
           AbsentAttribute("key2", "val2"),
-          RedundantAttribute("key3", "val3")))))
+          RedundantAttribute("key3", "val3")))))))
     }
 
     "not match the same inner element with different children" in {
       (<foo><bar><baz/></bar><baz><bar/></baz></foo> =?= <foo><bar><bax/></bar><baz><bax/></baz></foo>) mustBe (
-        Neq(
-          UnequalElem("bar", List(AbsentElem(<baz/>), RedundantElem(<bax/>))),
-          UnequalElem("baz", List(AbsentElem(<bar/>), RedundantElem(<bax/>))))
-      )
+        Neq(UnequalElem("foo", List(
+          UnequalElem("bar", List(AbsentNode(<baz/>), RedundantNode(<bax/>))),
+          UnequalElem("baz", List(AbsentNode(<bar/>), RedundantNode(<bax/>)))))))
     }
 
   }

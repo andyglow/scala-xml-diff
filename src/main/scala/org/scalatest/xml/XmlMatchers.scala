@@ -21,27 +21,27 @@ import com.github.andyglow.xml.diff._
 import org.scalatest.matchers._
 import org.scalatest.words.ResultOfNotWordForAny
 
-import scala.xml.NodeSeq
-
 trait XmlMatchers {
 
-  class NodeSeqMatcher(e: NodeSeq) extends Matcher[NodeSeq] {
-    override def apply(a: NodeSeq): MatchResult = {
+  class NodeMatcher(e: xml.Node, ignoreWhitespace: Boolean) extends Matcher[xml.Node] {
+    override def apply(a: xml.Node): MatchResult = {
+      val res = if(ignoreWhitespace) (e =#= a).successful else (e =?= a).successful
       MatchResult(
-        (e =?= a).successful,
+        res,
         s"""$e isn't equal to $a""",
         s"""both xml are equal""")
     }
   }
 
   // enable not
-  implicit class ReflectShouldMatcher[T <: NodeSeq](s: ResultOfNotWordForAny[T]) {
-    def beXml(e: NodeSeq) = s be BeMatcher[NodeSeq] { a =>
-      new NodeSeqMatcher(e) apply a
+  implicit class ReflectShouldNodeMatcher[T <: xml.Node](s: ResultOfNotWordForAny[T]) {
+    def beXml(e: xml.Node, ignoreWhitespace: Boolean = false) = s be BeMatcher[xml.Node] { a =>
+      new NodeMatcher(e, ignoreWhitespace) apply a
     }
   }
 
-  def beXml(e: xml.NodeSeq) = new NodeSeqMatcher(e)
+
+  def beXml(e: xml.Node, ignoreWhitespace: Boolean = false) = new NodeMatcher(e, ignoreWhitespace)
 
 }
 
