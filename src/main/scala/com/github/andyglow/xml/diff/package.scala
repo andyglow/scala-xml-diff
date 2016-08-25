@@ -39,6 +39,7 @@ package object diff {
     def elements: Seq[xml.Elem] = nodes collect {
       case x: xml.Elem => x
     }
+    def noElements: Boolean = elements.isEmpty
   }
 
   sealed trait XmlDiff {

@@ -22,9 +22,11 @@ import com.github.andyglow.xml.diff.XmlDiff._
 private[diff] object XmlDiffComputer {
 
   def matchText(e: xml.Node, a: xml.Node): XmlDiff = {
-    val left = e.text.trim
-    val right = a.text.trim
-    if (left == right) Eq else Neq(UnequalText(left, right))
+    if (e.child.noElements && a.child.noElements) {
+      val left = e.text.trim
+      val right = a.text.trim
+      if (left == right) Eq else Neq(UnequalText(left, right))
+    } else Eq
   }
 
   def matchNames(e: xml.Node, a: xml.Node): XmlDiff = {
@@ -117,11 +119,11 @@ private[diff] object XmlDiffComputer {
 
       case (xml.Comment(_), _) | (_, xml.Comment(_)) =>
         Eq
-        
+
       case (xml.Text(t1), xml.Text(t2)) =>
         if (t1.trim == t2.trim) Eq else
           Neq(UnequalText(t1.trim, t2.trim))
-        
+
       case (e: xml.Elem, a: xml.Elem) =>
         matchNames(e, a) ++
         matchText(e, a) ++

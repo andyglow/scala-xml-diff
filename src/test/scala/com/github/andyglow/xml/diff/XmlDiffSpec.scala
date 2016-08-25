@@ -46,6 +46,23 @@ class XmlDiffSpec extends WordSpec with Matchers {
       (<foo>xxx</foo> =?= <foo>xxx</foo>) mustBe (Eq)
     }
 
+    "match the same simple elements with text, whitespaces are ignored" in {
+      (
+        <root>
+          <fee>ttt</fee> <foo>xxx</foo> <bar>rrr</bar>
+        </root>
+          =?=
+          <root>
+            <fee>ttt
+            </fee>
+            <foo>
+              xxx
+
+            </foo> <bar>rrr</bar>
+          </root>
+        ) mustBe (Eq)
+    }
+
     "not match the same simple elements with different text" in {
       (<foo>xxx</foo> =?= <foo>yyy</foo>) mustBe (Neq(UnequalText("xxx", "yyy")))
     }
