@@ -24,17 +24,29 @@ scala> <foo/> =?= <foo/>
 res0: com.github.andyglow.xml.diff.package.XmlDiff = Eq
 
 scala> <foo/> =?= <bar/>
-res1: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalName(foo,bar)))
+res1: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalElem(foo,List(UnequalName(foo,bar)))))
 
 scala> <foo x="a"/> =?= <foo x="b"/>
-res2: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalAttribute(x,a,b)))
+res2: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(UnequalElem(foo,List(UnequalAttribute(x,a,b)))))
 
 scala> <foo><bar key="val1" key2="val2"/></foo> =?= <foo><bar key="val2" key3="val3"/></foo>
 res3: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(
-  UnequalElem(bar,List(
-    UnequalAttribute(key,val1,val2),
-    AbsentAttribute(key2,val2),
-    RedundantAttribute(key3,val3)))))
+  UnequalElem(foo,List(
+    UnequalElem(bar,List(
+      UnequalAttribute(key,val1,val2),
+      AbsentAttribute(key2,val2),
+      RedundantAttribute(key3,val3)))))))
+      
+// not ignoring whitespace      
+scala> <jaz>foo</jaz> =?= <jaz>foo </jaz>
+res4: com.github.andyglow.xml.diff.package.XmlDiff = Neq(List(
+  UnequalElem(jaz,List(
+    AbsentNode(foo),
+    RedundantNode(foo )))))
+
+// ignoring whitespace      
+scala> <jaz>foo</jaz> =#= <jaz>foo </jaz>
+res5: com.github.andyglow.xml.diff.package.XmlDiff = Eq
 ```
 
 #### Scalatest example
@@ -47,14 +59,14 @@ import org.scalatest.xml.XmlMatchers._
   "generate proper xml" in {
     val document: xml.NodeSeq = service.call(...)
     document should beXml(
-    <document>
-      <title>Invoice</title>
-      <version>0.6.2</version>
-      <header></header>
-      <content>
-        <line id="...">...</line>
-      </content>
-    </document>
+      <document>
+        <title>Invoice</title>
+        <version>0.6.2</version>
+        <header></header>
+        <content>
+          <line id="...">...</line>
+        </content>
+      </document>
     )
   }
   
@@ -62,5 +74,13 @@ import org.scalatest.xml.XmlMatchers._
   "be able to distinguish <bar/> from <foo/>" in {
     <bar/> should not beXml <foo/>
   }
+  
+  // you then can match ignoring whitespace
+  "match not counting leading/trailing whitespaces" in {
+    <foo>x</foo> should beXml (<foo> x </foo>, ignoreWhitespaces = true)
+  }
+  
+  // the same could be done using not beXml
+  
 }
 ```
