@@ -2,7 +2,8 @@ name := "scala-xml-diff"
 organization := "com.github.andyglow"
 
 version := "2.0.3-SNAPSHOT"
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
+crossScalaVersions := Seq("2.11.11", "2.12.3")
 
 libraryDependencies ++= Seq(
   "org.scala-lang.modules"  %% "scala-xml" % "1.0.6",
