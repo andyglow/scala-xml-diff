@@ -20,6 +20,7 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 bintrayReleaseOnPublish in ThisBuild := false
 licenses += ("GPL-3.0", url("https://www.gnu.org/licenses/gpl-3.0.html"))
+licenses += ("LGPL-3.0", url("https://www.gnu.org/licenses/lgpl-3.0.html"))
 bintrayPackageLabels := Seq("scala", "tools", "xml", "diff")
 bintrayRepository := "scala-tools"
 homepage := Some(url("http://github.com/andyglow/scala-xml-diff"))
