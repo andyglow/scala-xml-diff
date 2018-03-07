@@ -2,12 +2,12 @@ name := "scala-xml-diff"
 organization := "com.github.andyglow"
 
 version := "2.0.3-SNAPSHOT"
-scalaVersion := "2.11.11"
-crossScalaVersions := Seq("2.11.11", "2.12.3")
+scalaVersion := "2.11.12"
+crossScalaVersions := Seq("2.11.12", "2.12.4")
 
 libraryDependencies ++= Seq(
   "org.scala-lang.modules"  %% "scala-xml" % "1.0.6",
-  "org.scalatest"           %% "scalatest" % "3.0.4" % "provided"
+  "org.scalatest"           %% "scalatest" % "3.0.5" % "provided"
 )
 
 scalacOptions in Compile ++= Seq("-unchecked", "-deprecation", "-target:jvm-1.8", "-Ywarn-unused-import")
