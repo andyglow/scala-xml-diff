@@ -1,7 +1,7 @@
 name := "scala-xml-diff"
 organization := "com.github.andyglow"
 
-version := "2.0.3-SNAPSHOT"
+version := "2.0.4-SNAPSHOT"
 scalaVersion := "2.11.12"
 crossScalaVersions := Seq("2.11.12", "2.12.4")
 
