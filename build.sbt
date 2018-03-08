@@ -1,7 +1,6 @@
 name := "scala-xml-diff"
 organization := "com.github.andyglow"
 
-version := "2.0.4-SNAPSHOT"
 scalaVersion := "2.11.12"
 crossScalaVersions := Seq("2.11.12", "2.12.4")
 
@@ -18,7 +17,6 @@ scalacOptions in (Compile, doc) ++= Opts.doc.version(version.value)
 publishMavenStyle := true
 publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
-bintrayReleaseOnPublish in ThisBuild := false
 licenses += ("GPL-3.0", url("https://www.gnu.org/licenses/gpl-3.0.html"))
 licenses += ("LGPL-3.0", url("https://www.gnu.org/licenses/lgpl-3.0.html"))
 bintrayPackageLabels := Seq("scala", "tools", "xml", "diff")
