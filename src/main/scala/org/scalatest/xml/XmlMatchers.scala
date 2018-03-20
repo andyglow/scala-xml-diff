@@ -28,7 +28,7 @@ trait XmlMatchers {
       val res = if(ignoreWhitespace) (e =#= a).successful else (e =?= a).successful
       MatchResult(
         res,
-        s"""$e isn't equal to $a""",
+        s"""$a was not equal to $e""",
         s"""both xml are equal""")
     }
   }
