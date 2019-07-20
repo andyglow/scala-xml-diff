@@ -4,7 +4,7 @@ organization := "com.github.andyglow"
 
 scalaVersion := "2.11.12"
 
-crossScalaVersions := Seq("2.11.12", "2.12.4")
+crossScalaVersions := Seq("2.11.12", "2.12.4", "2.13.0")
 
 scalacOptions ++= Seq(
   "-encoding", "UTF-8",
@@ -12,7 +12,6 @@ scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
   "-Xlint",
-  "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
   "-Xfuture")
@@ -56,6 +55,6 @@ pomExtra :=
   </developers>
 
 libraryDependencies ++= Seq(
-  "org.scala-lang.modules"  %% "scala-xml" % "1.0.6",
-  "org.scalatest"           %% "scalatest" % "3.0.5" % "provided"
+  "org.scala-lang.modules"  %% "scala-xml" % "1.2.0",
+  "org.scalatest"           %% "scalatest" % "3.0.8" % "provided"
 )
