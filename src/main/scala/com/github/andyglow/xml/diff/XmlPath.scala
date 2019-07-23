@@ -17,47 +17,66 @@
  */
 package com.github.andyglow.xml.diff
 
+
 sealed trait XmlPath {
+
   def head: XmlPath.NameMatcher
+
   def tail: XmlPath
+
   def isEmpty: Boolean
+
   def matches(path: List[String]): Boolean
+
   def ::(head: XmlPath.NameMatcher) = XmlPath.::(head, this)
 }
 
 object XmlPath {
 
   sealed trait NameMatcher extends (String => Boolean)
+
   object NameMatcher {
+
     case object Wildcard extends NameMatcher {
       def apply(x: String): Boolean = true
       override def toString: String = "*"
     }
+
     case class Text(name: String) extends NameMatcher {
       def apply(x: String): Boolean = x == name
       override def toString: String = name
     }
+
     def apply(text: String): NameMatcher = text.trim match {
       case "*" => Wildcard
-      case x => Text(x)
+      case x   => Text(x)
     }
   }
 
   case object Nil extends XmlPath {
+
     override def isEmpty: Boolean = true
+
     override def head: NameMatcher = throw new NoSuchElementException("head of empty xml path")
+
     override def tail: XmlPath = throw new UnsupportedOperationException("tail of empty xml path")
+
     override def equals(that: Any) = that.isInstanceOf[Nil.type]
+
     override def matches(path: List[String]): Boolean = path.isEmpty
+
     override def toString: String = ""
   }
 
   case class ::(head: NameMatcher, tail: XmlPath) extends XmlPath {
+
     override def toString: String = tail.toString match {
       case "" => head.toString()
-      case x => head + "/" + x
+      case x  => head.toString() + "/" + x
     }
+
     override def isEmpty: Boolean = false
+
     override def matches(path: List[String]): Boolean = {
       def tokenMatches(thatHead: String): (Boolean, List[String]) = head match {
         case NameMatcher.Wildcard if !tail.isEmpty  => (true, path.dropWhile(!tail.head(_)))
@@ -67,8 +86,8 @@ object XmlPath {
 
       val matches = for {
         thatHead            <- path.headOption
-        (headMatches, rest) = tokenMatches(thatHead) if headMatches
-        result              = tail.matches(rest)
+        (headMatches, rest)  = tokenMatches(thatHead) if headMatches
+        result               = tail.matches(rest)
       } yield result
 
       matches getOrElse false
@@ -82,9 +101,10 @@ object XmlPath {
       .split('/')
       .map(_.trim)
       .filter(!_.isEmpty)
-      .foldRight(Nil: XmlPath) { (token, list) => list match { // remove duplicated *
-        case h :: t if h == NameMatcher.Wildcard && token == "*" => list
-        case _ => NameMatcher(token) :: list
-      }}
-
+      .foldRight(Nil: XmlPath) { (token, list) =>
+        list match { // remove duplicated *
+          case h :: t if h == NameMatcher.Wildcard && token == "*" => list
+          case _ => NameMatcher(token) :: list
+        }
+      }
 }

@@ -20,24 +20,29 @@ package com.github.andyglow.xml.patch
 import com.github.andyglow.xml.diff.XmlDiff
 
 class XmlPatch(details: Seq[XmlDiff.Detail]) {
+
   def apply(node: xml.NodeSeq): xml.NodeSeq = {
     details.foldLeft(node) {
-      case (node, detail) => (detail, node) match {
-        case (XmlDiff.UnequalName(name, _), node: xml.Elem) => node.copy(label = name)
-        case (XmlDiff.UnequalNamespaceUri(uri, _), node: xml.Elem) => node.copy(scope = node.scope.copy(uri = uri))
-        case (XmlDiff.UnequalElem(label, details), node: xml.Elem) => new XmlPatch(details).apply(node)
-        case (XmlDiff.UnequalAttribute(k, v, _), node: xml.Elem) => node % new xml.UnprefixedAttribute(k, v, node.attributes)
-        case (XmlDiff.RedundantAttribute(k, _), node: xml.Elem) => node.copy(attributes = node.attributes.remove(k))
-        case (XmlDiff.AbsentAttribute(k, v), node: xml.Elem) => node % new xml.UnprefixedAttribute(k, v, node.attributes)
-        case (XmlDiff.RedundantNode(x), node: xml.Elem) => node.copy(child = node.child.dropWhile(_ eq x))
-        case (XmlDiff.AbsentNode(x), node: xml.Elem) => node.copy(child = node.child :+ x)
+      case (node: xml.Elem, detail) => detail match {
+        case XmlDiff.UnequalName(name, _)        => node.copy(label = name)
+        case XmlDiff.UnequalNamespaceUri(uri, _) => node.copy(scope = node.scope.copy(uri = uri))
+        case XmlDiff.UnequalElem(label, details) => new XmlPatch(details).apply(node)
+        case XmlDiff.UnequalAttribute(k, v, em)  => node % new xml.UnprefixedAttribute(k, v, node.attributes)
+        case XmlDiff.RedundantAttribute(k, _)    => node.copy(attributes = node.attributes.remove(k))
+        case XmlDiff.AbsentAttribute(k, v)       => node % new xml.UnprefixedAttribute(k, v, node.attributes)
+        case XmlDiff.RedundantNode(x)            => node.copy(child = node.child.dropWhile(_ eq x))
+        case XmlDiff.AbsentNode(x)               => node.copy(child = node.child :+ x)
       }
+      case (node, _)                => node
     }
   }
 }
 
 object XmlPatch {
+
   val empty = new XmlPatch(Seq.empty)
+
   def apply(details: Seq[XmlDiff.Detail]): XmlPatch = new XmlPatch(details)
+
   def apply(head: XmlDiff.Detail, tail: Seq[XmlDiff.Detail]): XmlPatch = new XmlPatch(head +: tail)
 }

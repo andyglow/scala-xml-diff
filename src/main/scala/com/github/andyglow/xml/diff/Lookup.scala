@@ -17,32 +17,29 @@
   */
 package com.github.andyglow.xml.diff
 
-import org.scalatest.OptionValues._
-import org.scalatest.{WordSpec, Matchers}
 
+sealed trait Lookup {
 
-class SeqNodeOpsSpec extends WordSpec with Matchers {
+  def apply(right: xml.Node): Boolean
+}
 
-  "SeqNodeOps" must {
+object Lookup {
 
-    "take <x/> and leave <a/><b/></c>" in {
-      val (x, xs) = Seq(<a/>, <b/>, <c/>).findAndDrop(_.label == "x")
-      x shouldBe Symbol("empty")
-      xs shouldBe Seq(<a/>, <b/>, <c/>)
+  def apply(node: xml.Node): Lookup = node match {
+    case node: xml.Elem => Elem(node)
+    case _              => Node(node)
+  }
+
+  case class Elem(left: xml.Elem) extends Lookup {
+    def apply(right: xml.Node): Boolean = {
+      left.namespace == right.namespace &&
+        left.label == right.label
     }
+  }
 
-    "take <a/> and leave <b/></c>" in {
-      val (x, xs) = Seq(<a/>, <b/>, <c/>).findAndDrop(_.label == "a")
-      x shouldBe Symbol("defined")
-      x.value shouldBe <a/>
-      xs shouldBe Seq(<b/>, <c/>)
-    }
-
-    "take <a/> and leave <a/><b/></c>" in {
-      val (x, xs) = Seq(<a/>, <a/>, <b/>, <c/>).findAndDrop(_.label == "a")
-      x shouldBe Symbol("defined")
-      x.value shouldBe <a/>
-      xs shouldBe Seq(<a/>, <b/>, <c/>)
+  case class Node(left: xml.Node) extends Lookup {
+    def apply(right: xml.Node): Boolean = {
+      left.text == right.text
     }
   }
 }

@@ -19,9 +19,10 @@ package com.github.andyglow.xml.diff
 
 import com.github.andyglow.xml.diff.XmlPath._
 import com.github.andyglow.xml.diff.XmlPath.NameMatcher._
-import org.scalatest.{WordSpec, Matchers, FlatSpec}
+import org.scalatest.{WordSpec, Matchers}
 
 import scala.language.implicitConversions
+
 
 class XmlPathSpec extends WordSpec with Matchers {
 

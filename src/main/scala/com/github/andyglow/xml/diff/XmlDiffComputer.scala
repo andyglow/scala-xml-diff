@@ -24,8 +24,9 @@ private[diff] object XmlDiffComputer {
   def matchNames(e: xml.Node, a: xml.Node): XmlDiff = {
     def testName = if (e.label == a.label) None else Some(UnequalName(e.label, a.label))
     def testNsUri = if (e.namespace == a.namespace) None else Some(UnequalNamespaceUri(e.namespace, a.namespace))
+
     List(testName, testNsUri).flatten match {
-      case Nil => Eq
+      case Nil     => Eq
       case details => Neq(details)
     }
   }
@@ -63,7 +64,6 @@ private[diff] object XmlDiffComputer {
 
         leftToRight ++ rightToLeft
     }
-
   }
 
   private def compute(left: Seq[xml.Node], right: Seq[xml.Node])(v: (Option[xml.Node], xml.Node) => XmlDiff): (XmlDiff, Seq[xml.Node]) = {
@@ -76,7 +76,6 @@ private[diff] object XmlDiffComputer {
           List(UnequalElem(one.label, details))
         }
       } getOrElse Eq
-
 
       (v(head, one) ++ childrenRes, tail)
     }
