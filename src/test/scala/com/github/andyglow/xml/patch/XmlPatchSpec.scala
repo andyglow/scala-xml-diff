@@ -18,9 +18,10 @@
 package com.github.andyglow.xml.patch
 
 import com.github.andyglow.xml.diff._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers._
+import org.scalatest.wordspec._
 
-class XmlPatchSpec extends WordSpec with Matchers {
+class XmlPatchSpec extends AnyWordSpec {
 
   "XmlPatch" must {
 //    "0" in new Scope {
@@ -61,15 +62,15 @@ class XmlPatchSpec extends WordSpec with Matchers {
     def v2: xml.NodeSeq
 
     val mr = v1 =?= v2
-    println(mr)
-    println(mr.errorMessage)
+//    println(mr)
+//    println(mr.errorMessage)
 
     val patch = mr.asPatch
     val patched = patch apply v1
-    println(v1)
-    println(v2)
-    println("--")
-    println(patched)
+//    println(v1)
+//    println(v2)
+//    println("--")
+//    println(patched)
 
     (patched =?= v1) shouldBe (XmlDiff.Eq)
 

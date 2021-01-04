@@ -18,10 +18,10 @@
 package com.github.andyglow.xml.diff
 
 import com.github.andyglow.xml.diff.XmlDiff._
-import org.scalatest.MustMatchers._
-import org.scalatest._
+import org.scalatest.matchers.must.Matchers._
+import org.scalatest.wordspec._
 
-class XmlDiffSpec extends WordSpec with Matchers {
+class XmlDiffSpec extends AnyWordSpec {
 
   "XmlDiff" must {
 

@@ -86,8 +86,8 @@ object XmlPath {
 
       val matches = for {
         thatHead            <- path.headOption
-        (headMatches, rest)  = tokenMatches(thatHead) if headMatches
-        result               = tail.matches(rest)
+        (headMatches, rest)  = tokenMatches(thatHead)
+        result               = tail.matches(rest) if headMatches
       } yield result
 
       matches getOrElse false

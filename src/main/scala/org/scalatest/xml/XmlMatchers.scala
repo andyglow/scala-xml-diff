@@ -19,7 +19,7 @@ package org.scalatest.xml
 
 import com.github.andyglow.xml.diff._
 import org.scalatest.matchers._
-import org.scalatest.words.ResultOfNotWordForAny
+import org.scalatest.matchers.dsl.ResultOfNotWordForAny
 
 trait XmlMatchers {
 

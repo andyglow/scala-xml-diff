@@ -18,10 +18,11 @@
 package com.github.andyglow.xml.diff
 
 import org.scalatest.OptionValues._
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.matchers.should.Matchers._
+import org.scalatest.wordspec._
 
 
-class SeqNodeOpsSpec extends WordSpec with Matchers {
+class SeqNodeOpsSpec extends AnyWordSpec {
 
   "SeqNodeOps" must {
 

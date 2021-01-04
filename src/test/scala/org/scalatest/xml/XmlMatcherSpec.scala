@@ -17,13 +17,14 @@
   */
 package org.scalatest.xml
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.wordspec._
+import org.scalatest.matchers.should.Matchers._
 import org.scalatest.xml.XmlMatchers._
 
 import scala.xml.XML
 
 
-class XmlMatcherSpec extends WordSpec with Matchers {
+class XmlMatcherSpec extends AnyWordSpec {
 
   "XmlMatcher" must {
     "handle simple equality" in {

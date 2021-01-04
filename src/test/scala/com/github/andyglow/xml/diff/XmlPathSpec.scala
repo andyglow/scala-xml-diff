@@ -19,12 +19,13 @@ package com.github.andyglow.xml.diff
 
 import com.github.andyglow.xml.diff.XmlPath._
 import com.github.andyglow.xml.diff.XmlPath.NameMatcher._
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.matchers.should.Matchers._
+import org.scalatest.wordspec._
 
 import scala.language.implicitConversions
 
 
-class XmlPathSpec extends WordSpec with Matchers {
+class XmlPathSpec extends AnyWordSpec {
 
   "XmlPath" must {
     "parse 'a/x/*' and format it back in the same way" in {
