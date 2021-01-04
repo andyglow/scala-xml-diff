@@ -1,8 +1,6 @@
 # Scala XML Diff
-[![Build Status](https://travis-ci.org/andyglow/scala-xml-diff.svg)](https://travis-ci.org/andyglow/scala-xml-diff)
-[![Download](https://api.bintray.com/packages/andyglow/scala-tools/scala-xml-diff/images/download.svg) ](https://bintray.com/andyglow/scala-tools/scala-xml-diff/_latestVersion)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.andyglow/scala-xml-diff_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.andyglow/scala-xml-diff_2.11)
-[![Coverage Status](https://coveralls.io/repos/github/andyglow/scala-xml-diff/badge.svg?branch=master)](https://coveralls.io/github/andyglow/scala-xml-diff?branch=master)
+[![Build Status](https://cloud.drone.io/api/badges/andyglow/scala-xml-diff/status.svg)](https://cloud.drone.io/andyglow/scala-xml-diff)
+[![codecov](https://codecov.io/gh/andyglow/scala-xml-diff/branch/master/graph/badge.svg?token=iEGY6XNcz0)](https://codecov.io/gh/andyglow/scala-xml-diff)
 
 Tool to compare `scala.xml.Node`s with detailed comparison result
 
