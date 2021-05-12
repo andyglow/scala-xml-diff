@@ -15,13 +15,13 @@ scalaV := ScalaVer.fromString(scalaVersion.value) getOrElse ScalaVer.default
 
 scalacOptions := CompilerOptions(scalaV.value)
 
-scalacOptions in (Compile, doc) ++= Opts.doc.title("Scala XML Diff Tool")
+Compile / doc / scalacOptions ++= Opts.doc.title("Scala XML Diff Tool")
 
-scalacOptions in (Compile, doc) ++= Opts.doc.version(version.value)
+Compile / doc / scalacOptions ++= Opts.doc.version(version.value)
 
 libraryDependencies ++= Seq(
-  "org.scala-lang.modules"  %% "scala-xml" % "1.3.0",
-  "org.scalatest"           %% "scalatest" % "3.2.3" % Provided)
+  Dependencies.xml(scalaV.value),
+  Dependencies.scalatest)
 
 // release
 publishTo := sonatypePublishTo.value
