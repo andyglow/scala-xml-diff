@@ -1,7 +1,8 @@
 # Scala XML Diff
 [![Build Status](https://cloud.drone.io/api/badges/andyglow/scala-xml-diff/status.svg)](https://cloud.drone.io/andyglow/scala-xml-diff)
 [![codecov](https://codecov.io/gh/andyglow/scala-xml-diff/branch/master/graph/badge.svg?token=iEGY6XNcz0)](https://codecov.io/gh/andyglow/scala-xml-diff)
-[![mvn](https://img.shields.io/badge/dynamic/json.svg?label=mvn&query=%24.response.docs%5B0%5D.latestVersion&url=https%3A%2F%2Fsearch.maven.org%2Fsolrsearch%2Fselect%3Fq%3Dscala-xml-diff_2.13%26start%3D0%26rows%3D1)](https://search.maven.org/artifact/com.github.andyglow/scala-xml-diff_2.13/)
+[![mvn](https://img.shields.io/badge/dynamic/json.svg?label=scala&nbsp;2&query=%24.response.docs%5B0%5D.latestVersion&url=https%3A%2F%2Fsearch.maven.org%2Fsolrsearch%2Fselect%3Fq%3Dscala-xml-diff_2.13%26start%3D0%26rows%3D1)](https://search.maven.org/artifact/com.github.andyglow/scala-xml-diff_2.13/)
+[![mvn](https://img.shields.io/badge/dynamic/json.svg?color=03A7FF&label=scala&nbsp;3&query=%24.response.docs%5B0%5D.latestVersion&url=https%3A%2F%2Fsearch.maven.org%2Fsolrsearch%2Fselect%3Fq%3Dscala-xml-diff_3%26start%3D0%26rows%3D1)](https://search.maven.org/artifact/com.github.andyglow/scala-xml-diff_3/)
 
 Tool to compare `scala.xml.Node`s with detailed comparison result
 
