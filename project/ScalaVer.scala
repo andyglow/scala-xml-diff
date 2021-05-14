@@ -11,7 +11,7 @@ object ScalaVer {
 
   final case object _213 extends ScalaVer("2.13.4")
 
-  final case object _300 extends ScalaVer("3.0.0-RC3")
+  final case object _300 extends ScalaVer("3.0.0")
 
   val values: Seq[ScalaVer] = Set(_211, _212, _213, _300).toSeq
 
