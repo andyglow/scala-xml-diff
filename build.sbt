@@ -30,6 +30,9 @@ licenses ++= Seq(
   ("GPL-3.0", url("https://www.gnu.org/licenses/gpl-3.0.html")),
   ("LGPL-3.0", url("https://www.gnu.org/licenses/lgpl-3.0.html")))
 
+Test / fork := true
+Test / javaOptions += "-Xss256K"
+
 homepage := Some(url("http://github.com/andyglow/scala-xml-diff"))
 
 startYear := Some(2017)

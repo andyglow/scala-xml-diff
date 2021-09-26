@@ -107,6 +107,13 @@ class XmlDiffSpec extends AnyWordSpec {
           UnequalElem("baz", List(AbsentNode(<bar/>), RedundantNode(<bax/>)))))))
     }
 
+    "be stack safe" in {
+      def xml(numChildren: Int) = <element>{1.to(numChildren).map(_ => <i/>)}</element>
+
+      (xml(999) =?= xml(1000)) mustBe (
+        Neq(List(UnequalElem("element", List(RedundantNode(<i/>))))))
+    }
+
   }
 
 }
