@@ -21,17 +21,17 @@ import com.github.andyglow.xml.diff.XmlDiff._
 
 private[diff] object XmlDiffComputer {
 
-  def matchNames(e: xml.Node, a: xml.Node): XmlDiff = {
+  def matchNames(e: xml.Node, a: xml.Node): Eval[XmlDiff] = {
     def testName = if (e.label == a.label) None else Some(UnequalName(e.label, a.label))
     def testNsUri = if (e.namespace == a.namespace) None else Some(UnequalNamespaceUri(e.namespace, a.namespace))
 
-    List(testName, testNsUri).flatten match {
+    Eval.now(List(testName, testNsUri).flatten match {
       case Nil     => Eq
       case details => Neq(details)
-    }
+    })
   }
 
-  def matchAttributes(e: xml.Elem, a: xml.Elem): XmlDiff = {
+  def matchAttributes(e: xml.Elem, a: xml.Elem): Eval[XmlDiff] = {
     def contains(leftElem: xml.Elem, leftMeta: xml.MetaData, rightElem: xml.Elem, rightMeta: xml.MetaData)(v: (Option[String], String, String) => XmlDiff): XmlDiff = {
       val lookup = if (leftMeta.isPrefixed) {
         val uri = leftMeta getNamespace leftElem
@@ -44,13 +44,13 @@ private[diff] object XmlDiffComputer {
     }
 
     (e.attributes, a.attributes) match {
-      case (xml.Null, xml.Null) => Eq
+      case (xml.Null, xml.Null) => Eval.now(Eq)
       case (xml.Null, right) =>
         val redundant = right.asAttrMap map { case (k, v) => RedundantAttribute(k, v) }
-        Neq(redundant.toList)
+        Eval.now(Neq(redundant.toList))
       case (left, xml.Null) =>
         val absent = left.asAttrMap map { case (k, v) => AbsentAttribute(k, v) }
-        Neq(absent.toList)
+        Eval.now(Neq(absent.toList))
       case (left, right) =>
         val leftToRight = contains(e, left, a, right) {
           case (Some(right), _, left) if left == right => Eq
@@ -62,67 +62,76 @@ private[diff] object XmlDiffComputer {
           case (None, k, right) => Neq(RedundantAttribute(k, right))
         }
 
-        leftToRight ++ rightToLeft
+        Eval.now(leftToRight ++ rightToLeft)
     }
   }
 
-  private def compute(left: Seq[xml.Node], right: Seq[xml.Node])(v: (Option[xml.Node], xml.Node) => XmlDiff): (XmlDiff, Seq[xml.Node]) = {
-    def contains(one: xml.Node, all: Seq[xml.Node]): (XmlDiff, Seq[xml.Node]) = {
+  private def compute(left: Seq[xml.Node], right: Seq[xml.Node])(v: (Option[xml.Node], xml.Node) => Eval[XmlDiff]): Eval[(XmlDiff, Seq[xml.Node])] = {
+    def contains(one: xml.Node, all: Seq[xml.Node]): Eval[(XmlDiff, Seq[xml.Node])] = {
       val lookup = Lookup(one)
       val (head, tail) = all findAndDrop lookup.apply
 
       val childrenRes = head map { x =>
-        matchChildren(one.child, x.child) flatMap { details =>
+        matchChildren(one.child, x.child).map(_.flatMap { details =>
           List(UnequalElem(one.label, details))
-        }
-      } getOrElse Eq
+        })
+      } getOrElse Eval.now(Eq)
 
-      (v(head, one) ++ childrenRes, tail)
+      for {
+        res1 <- v(head, one)
+        res2 <- childrenRes
+      } yield (res1 ++ res2, tail)
     }
 
     if (left.size == 1) {
       contains(left.head, right)
     } else if (left.size > 1) {
-      val (diff1, rest1) = contains(left.head, right)
-      val (diff2, rest2) = compute(left.tail, rest1)(v)
-      (diff1 ++ diff2, rest2)
+      for {
+        res1 <- contains(left.head, right)
+        (diff1, rest1) = res1
+        res2 <- compute(left.tail, rest1)(v)
+        (diff2, rest2) = res2
+      } yield (diff1 ++ diff2, rest2)
     } else {
-      (Eq, Seq.empty)
+      Eval.now((Eq, Seq.empty))
     }
   }
 
-  def matchChildren(e: Seq[xml.Node], a: Seq[xml.Node]): XmlDiff = {
-    val (diff1, rest) = compute(e, a) {
+  def matchChildren(e: Seq[xml.Node], a: Seq[xml.Node]): Eval[XmlDiff] = {
+    compute(e, a) {
       case (Some(that: xml.Elem), one: xml.Elem) =>
-        matchAttributes(one, that) flatMap { details =>
+        matchAttributes(one, that).map(_.flatMap { details =>
           List(UnequalElem(one.label, details))
-        }
+        })
 
       case (Some(that), one) =>
-        if (one.text.trim == that.text.trim) Eq else Neq(AbsentNode(one), RedundantNode(that))
+        Eval.now(if (one.text.trim == that.text.trim) Eq else Neq(AbsentNode(one), RedundantNode(that)))
 
-      case (None, one) => Neq(AbsentNode(one))
+      case (None, one) => Eval.now(Neq(AbsentNode(one)))
+    }.map { case (diff1, rest) =>
+      val diff2 = rest.foldLeft[XmlDiff](Eq) {
+        case (diff, that) => diff ++ Neq(RedundantNode(that))
+      }
+
+      diff1 ++ diff2
     }
-
-    val diff2 = rest.foldLeft[XmlDiff](Eq) {
-      case (diff, that) => diff ++ Neq(RedundantNode(that))
-    }
-
-    diff1 ++ diff2
   }
 
-  def computeMatching(e: xml.NodeSeq, a: xml.NodeSeq): XmlDiff = {
+  def computeMatching(e: xml.NodeSeq, a: xml.NodeSeq): Eval[XmlDiff] = {
     (e, a) match {
       case (e: xml.Elem, a: xml.Elem) =>
-        matchNames(e, a) ++
-        matchAttributes(e, a) ++
-        matchChildren(e.child, a.child) flatMap {
-          details => List(UnequalElem(e.label, details))
-        }
+        for {
+          names <- matchNames(e, a)
+          attrs <- matchAttributes(e, a)
+          children <- matchChildren(e.child, a.child)
+          res = (names ++ attrs ++ children).flatMap {
+            details => List(UnequalElem(e.label, details))
+          }
+        } yield res
 
       case (e: xml.Node, a: xml.Node) =>
-        if (e.text.trim == a.text.trim) Eq else
-          Neq(AbsentNode(e), RedundantNode(a))
+        Eval.now(if (e.text.trim == a.text.trim) Eq else
+          Neq(AbsentNode(e), RedundantNode(a)))
 
       case _ =>
         matchChildren(e.theSeq, a.theSeq)
