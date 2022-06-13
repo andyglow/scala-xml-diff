@@ -23,11 +23,11 @@ package object diff {
   implicit class XmlOps[T <: xml.NodeSeq](val e: T) extends AnyVal {
 
     def =?=(a: T): XmlDiff = {
-      XmlDiffComputer.computeMatching(e, a)
+      XmlDiffComputer.computeMatching(e, a).value
     }
 
     def =#=(a: T)(implicit ev: T <:< xml.Node): XmlDiff = {
-      XmlDiffComputer.computeMatching(xml.Utility.trim(e), xml.Utility.trim(a))
+      XmlDiffComputer.computeMatching(xml.Utility.trim(e), xml.Utility.trim(a)).value
     }
   }
 
