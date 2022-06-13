@@ -43,7 +43,7 @@ package com.github.andyglow.xml.diff
 
 import scala.util.control.TailCalls._
 
-sealed abstract class Eval[+A] extends Serializable { self =>
+private[diff] sealed abstract class Eval[+A] extends Serializable { self =>
   def value: A
 
   def map[B](f: A => B): Eval[B] =
@@ -72,7 +72,7 @@ sealed abstract class Eval[+A] extends Serializable { self =>
     }
 }
 
-object Eval {
+private[diff] object Eval {
   final case class Now[A](value: A) extends Eval[A]
 
   def now[A](a: A): Eval[A] = Now(a)
