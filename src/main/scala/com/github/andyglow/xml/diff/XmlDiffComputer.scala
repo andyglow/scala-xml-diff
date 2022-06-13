@@ -25,7 +25,7 @@ private[diff] object XmlDiffComputer {
     def testName = if (e.label == a.label) None else Some(UnequalName(e.label, a.label))
     def testNsUri = if (e.namespace == a.namespace) None else Some(UnequalNamespaceUri(e.namespace, a.namespace))
 
-    Eval.now(List(testName, testNsUri).flatten match {
+    Eval.Now(List(testName, testNsUri).flatten match {
       case Nil     => Eq
       case details => Neq(details)
     })
@@ -44,13 +44,13 @@ private[diff] object XmlDiffComputer {
     }
 
     (e.attributes, a.attributes) match {
-      case (xml.Null, xml.Null) => Eval.now(Eq)
+      case (xml.Null, xml.Null) => Eval.Now(Eq)
       case (xml.Null, right) =>
         val redundant = right.asAttrMap map { case (k, v) => RedundantAttribute(k, v) }
-        Eval.now(Neq(redundant.toList))
+        Eval.Now(Neq(redundant.toList))
       case (left, xml.Null) =>
         val absent = left.asAttrMap map { case (k, v) => AbsentAttribute(k, v) }
-        Eval.now(Neq(absent.toList))
+        Eval.Now(Neq(absent.toList))
       case (left, right) =>
         val leftToRight = contains(e, left, a, right) {
           case (Some(right), _, left) if left == right => Eq
@@ -62,7 +62,7 @@ private[diff] object XmlDiffComputer {
           case (None, k, right) => Neq(RedundantAttribute(k, right))
         }
 
-        Eval.now(leftToRight ++ rightToLeft)
+        Eval.Now(leftToRight ++ rightToLeft)
     }
   }
 
@@ -75,7 +75,7 @@ private[diff] object XmlDiffComputer {
         matchChildren(one.child, x.child).map(_.flatMap { details =>
           List(UnequalElem(one.label, details))
         })
-      } getOrElse Eval.now(Eq)
+      } getOrElse Eval.Now(Eq)
 
       for {
         res1 <- v(head, one)
@@ -93,7 +93,7 @@ private[diff] object XmlDiffComputer {
         (diff2, rest2) = res2
       } yield (diff1 ++ diff2, rest2)
     } else {
-      Eval.now((Eq, Seq.empty))
+      Eval.Now((Eq, Seq.empty))
     }
   }
 
@@ -105,9 +105,9 @@ private[diff] object XmlDiffComputer {
         })
 
       case (Some(that), one) =>
-        Eval.now(if (one.text.trim == that.text.trim) Eq else Neq(AbsentNode(one), RedundantNode(that)))
+        Eval.Now(if (one.text.trim == that.text.trim) Eq else Neq(AbsentNode(one), RedundantNode(that)))
 
-      case (None, one) => Eval.now(Neq(AbsentNode(one)))
+      case (None, one) => Eval.Now(Neq(AbsentNode(one)))
     }.map { case (diff1, rest) =>
       val diff2 = rest.foldLeft[XmlDiff](Eq) {
         case (diff, that) => diff ++ Neq(RedundantNode(that))
@@ -130,7 +130,7 @@ private[diff] object XmlDiffComputer {
         } yield res
 
       case (e: xml.Node, a: xml.Node) =>
-        Eval.now(if (e.text.trim == a.text.trim) Eq else
+        Eval.Now(if (e.text.trim == a.text.trim) Eq else
           Neq(AbsentNode(e), RedundantNode(a)))
 
       case _ =>

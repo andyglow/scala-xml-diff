@@ -51,38 +51,34 @@ private[diff] sealed abstract class Eval[+A] extends Serializable { self =>
 
   def flatMap[B](f: A => Eval[B]): Eval[B] =
     this match {
-      case c: Eval.Now[A] =>
-        new Eval.FlatMap[B] {
-          type Start = A
-          val start = () => self
-          val run = f
-        }
+      case Eval.Now(_) =>
+        Eval.FlatMap[B, A](
+          start = () => self,
+          run = f
+        )
 
-      case c: Eval.FlatMap[A] =>
-        new Eval.FlatMap[B] {
-          type Start = c.Start
-          val start: () => Eval[Start] = c.start
-          val run: Start => Eval[B] = (s: c.Start) =>
-            new Eval.FlatMap[B] {
-              type Start = A
-              val start = () => c.run(s)
-              val run = f
-            }
-        }
+      case c @ Eval.FlatMap(_, _) => c.wrap(f)
     }
 }
 
 private[diff] object Eval {
+
   final case class Now[A](value: A) extends Eval[A]
 
-  def now[A](a: A): Eval[A] = Now(a)
-
-  sealed abstract class FlatMap[A] extends Eval[A] { self =>
-    type Start
-    val start: () => Eval[Start]
-    val run: Start => Eval[A]
-
+  final case class FlatMap[A, Start](
+    start: () => Eval[Start],
+    run: Start => Eval[A]
+  ) extends Eval[A] { self =>
     def value: A = evaluate(this)
+    def wrap[B](f: A => Eval[B]): FlatMap[B, Start] =
+      Eval.FlatMap[B, Start](
+        start = self.start,
+        run = (s: Start) =>
+          Eval.FlatMap[B, A](
+            start = () => self.run(s),
+            run = f
+          )
+      )
   }
 
   sealed abstract private class FnStack[A, B]
@@ -92,19 +88,19 @@ private[diff] object Eval {
   private def evaluate[A](e: Eval[A]): A = {
     def loop[A1](curr: Eval[A1], fs: FnStack[A1, A]): TailRec[A] =
       curr match {
-        case c: FlatMap[A1] =>
+        case c @ FlatMap(_, _) =>
           c.start() match {
-            case cc: FlatMap[c.Start] =>
+            case cc @ FlatMap(_, _) =>
               tailcall(loop(cc.start(), Many(cc.run, Many(c.run, fs))))
 
-            case xx: Now[c.Start] =>
-              tailcall(loop(c.run(xx.value), fs))
+            case Now(value) =>
+              tailcall(loop(c.run(value), fs))
           }
 
-        case x: Now[A1] =>
+        case Now(value) =>
           fs match {
-            case Many(f, fs) => tailcall(loop(f(x.value), fs))
-            case Ident(ev)   => done(ev(x.value))
+            case Many(f, fs) => tailcall(loop(f(value), fs))
+            case Ident(ev)   => done(ev(value))
           }
       }
 
